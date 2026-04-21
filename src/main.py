@@ -13,6 +13,7 @@ from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
 from resources.nat_gateway import nat_gateway_meta
 from resources.rds import rds_costs
+from resources.route53_zone import route53_zone_costs
 from resources.secretsmanager_secret import secretsmanager_secret_costs
 
 TF_PLAN_FILE = "../plan/terraform-sf2l.plan.json"
@@ -143,6 +144,13 @@ def main():
 
     if has_secretsmanager_resources:
         rows, cost = secretsmanager_secret_costs.process_secretsmanager_secret(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
+
+    has_route53_zone_resources = any(res.get("type") == "aws_route53_zone" for res in plan.get("resource_changes", []))
+
+    if has_route53_zone_resources:
+        rows, cost = route53_zone_costs.process_route53_zone(plan, pricing, region)
         table.extend(rows)
         total_cost += cost
 
