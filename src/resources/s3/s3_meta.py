@@ -1,6 +1,6 @@
 # resources/s3/s3_meta.py
 
-from core import config_loader, logger
+from core import config_loader
 
 
 def extract_s3_bucket(plan):

@@ -22,7 +22,7 @@ def build_s3_storage_filter(region, storage_class="Standard"):
     return [
         {"Type": "TERM_MATCH", "Field": "productFamily", "Value": "Amazon S3"},
         {"Type": "TERM_MATCH", "Field": "location", "Value": region},
-        {"Type": "TERM_MATCH", "Field": "usagetype", "Value": f"TimedStorage-ByteHrs"},
+        {"Type": "TERM_MATCH", "Field": "usagetype", "Value": "TimedStorage-ByteHrs"},
     ]
 
 
