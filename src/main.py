@@ -16,6 +16,7 @@ from resources.nat_gateway import nat_gateway_meta
 from resources.rds import rds_costs
 from resources.route53_zone import route53_zone_costs
 from resources.secretsmanager_secret import secretsmanager_secret_costs
+from resources.ses_domain_identity import ses_domain_identity_costs
 
 TF_PLAN_FILE = "../plan/terraform-sf2l.plan.json"
 IGNORED_PREFIXES = [
@@ -161,6 +162,15 @@ def main():
 
     if has_cloudwatch_log_group_resources:
         rows, cost = cloudwatch_log_group_costs.process_cloudwatch_log_group(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
+
+    has_ses_domain_identity_resources = any(
+        res.get("type") == "aws_ses_domain_identity" for res in plan.get("resource_changes", [])
+    )
+
+    if has_ses_domain_identity_resources:
+        rows, cost = ses_domain_identity_costs.process_ses_domain_identity(plan)
         table.extend(rows)
         total_cost += cost
 
