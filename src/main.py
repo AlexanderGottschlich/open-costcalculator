@@ -6,7 +6,7 @@ from pathlib import Path
 import boto3
 from tabulate import tabulate
 
-from core import arg_utils, config, duration_meta, logger
+from core import arg_utils, duration_meta, logger
 from resources.alb import alb_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
@@ -70,9 +70,7 @@ def main():
     with open(args.plan) as f:
         plan = json.load(f)
 
-    region = args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(plan)
-    logger.info(f"Verwende Region: {region}")
-
+    region = extract_region_from_plan(plan)
     pricing = boto3.client("pricing", region_name="us-east-1")
     ec2_client = boto3.client("ec2", region_name=region)
 
