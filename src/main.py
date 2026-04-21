@@ -7,6 +7,7 @@ import boto3
 from tabulate import tabulate
 
 from core import arg_utils, config, config_loader, duration_meta, logger
+from core.group_by import tags as group_tags
 from resources.alb import alb_costs
 from resources.cloudwatch_log_group import cloudwatch_log_group_costs
 from resources.cognito_user_pool import cognito_user_pool_costs
@@ -192,6 +193,16 @@ def main():
         rows, cost = s3_costs.process_s3(plan, pricing, region, app_config)
         table.extend(rows)
         total_cost += cost
+
+    if args.group_by:
+        tagged_resources = group_tags.extract_all_resource_tags(plan)
+        if tagged_resources:
+            groups = group_tags.group_by_key(tagged_resources, args.group_by)
+            logger.info(f"Grouped by tag: {args.group_by}")
+            for group_name, resources in groups.items():
+                logger.info(f"  {args.group_by}={group_name}: {len(resources)} resources")
+        else:
+            logger.info(f"No resources found with tag '{args.group_by}'")
 
     print_summary_table(table, total_cost)
 
