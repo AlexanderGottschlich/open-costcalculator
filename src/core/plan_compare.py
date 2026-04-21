@@ -31,40 +31,33 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     delta = plan2_cost - plan1_cost
     delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
-    def format_plan_table(name, table):
-        lines = []
-        lines.append(f"{name}")
-        lines.append("")
-        lines.append("Komponente:")
-        for row in table:
-            lines.append(f"{row[0]:20} {row[1]}x {row[2]:15} ${row[3].replace('$', ''):>12}")
-        return lines
-
     print("")
     print("=" * 80)
     print("Cost Comparison")
     print("=" * 80)
 
-    plan1_lines = format_plan_table(plan1_name, plan1_table)
-    plan2_lines = format_plan_table(plan2_name, plan2_table)
-    max_lines = max(len(plan1_lines), len(plan2_lines))
+    rows = []
+    max_rows = max(len(plan1_table), len(plan2_table))
+    rows.append([plan1_name, plan2_name])
+    rows.append(["", ""])
+    rows.append(["Komponente:", "Komponente:"])
 
-    combined = []
-    for i in range(max_lines):
-        p1 = plan1_lines[i] if i < len(plan1_lines) else ""
-        p2 = plan2_lines[i] if i < len(plan2_lines) else ""
-        combined.append([p1, p2])
+    for i in range(max_rows):
+        p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
+        p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
+        row1 = f"{p1[0]:<20} {p1[1]}x {p1[2]:<12} ${p1[3].replace('$', ''):>8}"
+        row2 = f"{p2[0]:<20} {p2[1]}x {p2[2]:<12} ${p2[3].replace('$', ''):>8}"
+        rows.append([row1, row2])
 
-    print(tabulate(combined, tablefmt="plain"))
+    print(tabulate(rows, tablefmt="grid"))
 
     print("-" * 80)
-    header_len = max(len(plan1_name), len(plan2_name), 6)
     print(
         tabulate(
-            [[f"{plan1_name:<{header_len}}", f"${plan1_cost:.5f}", f"{plan2_name:<{header_len}}", f"${plan2_cost:.5f}"]],
+            [[plan1_name, f"${plan1_cost:.5f}", plan2_name, f"${plan2_cost:.5f}"]],
             tablefmt="grid",
         )
     )
-    print("-" * 80)
+    print("=" * 80)
     print(f"Delta (Cost Change)       | {delta_symbol} ${abs(delta):.5f}")
     print("=" * 80)
