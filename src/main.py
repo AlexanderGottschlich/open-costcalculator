@@ -70,28 +70,7 @@ def print_summary_table(table, total_cost):
     logger.info(f"Gesamtkosten/Monat: ${round(total_cost, 5)}")
 
 
-def main():
-    args = parse_args()
-    logger.setup_logging(args.log_level)
-
-    plan_path = Path(args.plan)
-    if not plan_path.is_file():
-        logger.error(f"Die angegebene Datei '{args.plan}' wurde nicht gefunden.")
-        sys.exit(1)
-
-    with open(args.plan) as f:
-        plan = json.load(f)
-
-    app_config = config_loader.load_config(args.config)
-    if app_config:
-        logger.info(f"Konfiguration geladen aus: {args.config}")
-
-    region = args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(plan)
-    logger.info(f"Verwende Region: {region}")
-
-    pricing = boto3.client("pricing", region_name="us-east-1")
-    ec2_client = boto3.client("ec2", region_name=region)
-
+def analyze_plan(plan, pricing, region, app_config):
     table = []
     total_cost = 0.0
 
@@ -113,6 +92,7 @@ def main():
         total_cost += cost
 
         if instance_type and desired_size > 0 and not use_fargate:
+            ec2_client = boto3.client("ec2", region_name=region)
             rows, cost = nodegroup_costs.process_node_group(
                 pricing, ec2_client, instance_type, desired_size, marketoption, region
             )
@@ -196,6 +176,57 @@ def main():
         table.extend(rows)
         total_cost += cost
 
+    return table, round(total_cost, 5)
+
+
+def main():
+    args = parse_args()
+    logger.setup_logging(args.log_level)
+
+    plan_path = Path(args.plan)
+    if not plan_path.is_file():
+        logger.error(f"Die angegebene Datei '{args.plan}' wurde nicht gefunden.")
+        sys.exit(1)
+
+    with open(args.plan) as f:
+        plan = json.load(f)
+
+    app_config = config_loader.load_config(args.config)
+    if app_config:
+        logger.info(f"Konfiguration geladen aus: {args.config}")
+
+    region = args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(plan)
+    logger.info(f"Verwende Region: {region}")
+
+    pricing = boto3.client("pricing", region_name="us-east-1")
+
+    if args.compare:
+        compare_path = Path(args.compare)
+        if not compare_path.is_file():
+            logger.error(f"Die Vergleichsdatei '{args.compare}' wurde nicht gefunden.")
+        else:
+            with open(args.compare) as f:
+                compare_plan = json.load(f)
+
+            comparison = plan_compare.compare_plans(args.compare, args.plan)
+            logger.info("")
+            logger.info(plan_compare.format_comparison(comparison))
+
+            before_region = (
+                args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(compare_plan)
+            )
+            before_pricing = boto3.client("pricing", region_name="us-east-1")
+
+            before_table, before_cost = analyze_plan(compare_plan, before_pricing, before_region, app_config)
+            after_table, after_cost = analyze_plan(plan, pricing, region, app_config)
+
+            plan_compare.print_cost_comparison(Path(args.compare).name, before_cost, Path(args.plan).name, after_cost)
+
+            print_summary_table(after_table, after_cost)
+            return
+
+    table, total_cost = analyze_plan(plan, pricing, region, app_config)
+
     if args.group_by:
         tagged_resources = group_tags.extract_all_resource_tags(plan)
         if tagged_resources:
@@ -205,15 +236,6 @@ def main():
                 logger.info(f"  {args.group_by}={group_name}: {len(resources)} resources")
         else:
             logger.info(f"No resources found with tag '{args.group_by}'")
-
-    if args.compare:
-        compare_path = Path(args.compare)
-        if not compare_path.is_file():
-            logger.error(f"Die Vergleichsdatei '{args.compare}' wurde nicht gefunden.")
-        else:
-            comparison = plan_compare.compare_plans(args.compare, args.plan)
-            logger.info("")
-            logger.info(plan_compare.format_comparison(comparison))
 
     print_summary_table(table, total_cost)
 

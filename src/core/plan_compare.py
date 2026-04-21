@@ -53,3 +53,19 @@ def format_comparison(comparison):
             lines.append(f"  = {res}")
 
     return "\n".join(lines)
+
+
+def print_cost_comparison(plan1_name, plan1_cost, plan2_name, plan2_cost):
+    delta = plan2_cost - plan1_cost
+    delta_str = f"+${delta:.5f}" if delta >= 0 else f"-${abs(delta):.5f}"
+    delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
+
+    print("")
+    print(f"{'='*60}")
+    print(f"Cost Comparison")
+    print(f"{'='*60}")
+    print(f"{plan1_name:30} | ${plan1_cost:.5f}")
+    print(f"{plan2_name:30} | ${plan2_cost:.5f}")
+    print(f"{'-'*60}")
+    print(f"Delta (Cost Change)           | {delta_symbol} ${abs(delta):.5f}")
+    print(f"{'='*60}")
