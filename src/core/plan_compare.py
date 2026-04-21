@@ -29,31 +29,42 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     from tabulate import tabulate
 
     delta = plan2_cost - plan1_cost
-    delta_str = f"+${delta:.5f}" if delta >= 0 else f"-${abs(delta):.5f}"
     delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
-    combined_table = []
-    max_rows = max(len(plan1_table), len(plan2_table))
-
-    for i in range(max_rows):
-        p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
-        p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
-        combined_table.append([p1[0], p1[1], p1[2], p1[3], p2[0], p2[1], p2[2], p2[3]])
+    def format_plan_table(name, table):
+        lines = []
+        lines.append(f"{name}")
+        lines.append("")
+        lines.append("Komponente:")
+        for row in table:
+            lines.append(f"{row[0]:20} {row[1]}x {row[2]:15} ${row[3].replace('$', ''):>12}")
+        return lines
 
     print("")
-    print("=" * 70)
+    print("=" * 80)
     print("Cost Comparison")
-    print("=" * 70)
+    print("=" * 80)
+
+    plan1_lines = format_plan_table(plan1_name, plan1_table)
+    plan2_lines = format_plan_table(plan2_name, plan2_table)
+    max_lines = max(len(plan1_lines), len(plan2_lines))
+
+    combined = []
+    for i in range(max_lines):
+        p1 = plan1_lines[i] if i < len(plan1_lines) else ""
+        p2 = plan2_lines[i] if i < len(plan2_lines) else ""
+        combined.append([p1, p2])
+
+    print(tabulate(combined, tablefmt="plain"))
+
+    print("-" * 80)
+    header_len = max(len(plan1_name), len(plan2_name), 6)
     print(
         tabulate(
-            combined_table,
-            headers=["Komponente", "Anzahl", "Typ", "Kosten", "Komponente", "Anzahl", "Typ", "Kosten"],
-            tablefmt="github",
+            [[f"{plan1_name:<{header_len}}", f"${plan1_cost:.5f}", f"{plan2_name:<{header_len}}", f"${plan2_cost:.5f}"]],
+            tablefmt="grid",
         )
     )
-    print("-" * 70)
-    print(f"{plan1_name:30} | ${plan1_cost:.5f}")
-    print(f"{plan2_name:30} | ${plan2_cost:.5f}")
-    print("-" * 70)
+    print("-" * 80)
     print(f"Delta (Cost Change)       | {delta_symbol} ${abs(delta):.5f}")
-    print("=" * 70)
+    print("=" * 80)

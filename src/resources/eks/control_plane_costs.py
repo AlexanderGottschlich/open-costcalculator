@@ -13,12 +13,14 @@ def calculate_control_plane_cost(release_date, hours):
     months_since_release = (current_date.year - release_date.year) * 12 + current_date.month - release_date.month
 
     if months_since_release <= 12:
+        logger.info(f"EKS Control Plane: Standard Rate ({months_since_release} Monate)")
         return pricing_defaults.CONTROL_PLANE_STANDARD_RATE * hours
-    elif months_since_release <= 24:
+    elif months_since_release <= 14:
+        logger.info(f"EKS Control Plane: Extended Rate ({months_since_release} Monate)")
         return pricing_defaults.CONTROL_PLANE_EXTENDED_RATE * hours
     else:
         logger.warn("Kubernetes-Version wird möglicherweise nicht mehr unterstützt.")
-        return 0.0
+        return pricing_defaults.CONTROL_PLANE_STANDARD_RATE * hours
 
 
 def process_control_plane(plan, hours):
