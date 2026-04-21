@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core import logger, pricing_defaults
+from core import logger, pricing_defaults, pricing_utils
 from resources.eks import cluster_meta, eks_pricing_meta
 
 
@@ -12,10 +12,10 @@ def calculate_control_plane_cost(release_date, hours):
     current_date = datetime.now()
     months_since_release = (current_date.year - release_date.year) * 12 + current_date.month - release_date.month
 
-    if months_since_release <= 14:
+    if months_since_release <= 12:
         return pricing_defaults.CONTROL_PLANE_STANDARD_RATE * hours
-    elif months_since_release <= 26:
-        return eks_pricing_meta.CONTROL_PLANE_EXTENDED_RATE * hours
+    elif months_since_release <= 24:
+        return pricing_defaults.CONTROL_PLANE_EXTENDED_RATE * hours
     else:
         logger.warn("Kubernetes-Version wird möglicherweise nicht mehr unterstützt.")
         return 0.0

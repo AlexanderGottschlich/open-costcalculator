@@ -21,51 +21,39 @@ def compare_plans(before_path, after_path):
 
     added = after_types - before_types
     removed = before_types - after_types
-    unchanged = before_types & after_types
 
-    return {
-        "added": sorted(added),
-        "removed": sorted(removed),
-        "unchanged": sorted(unchanged),
-    }
+    return added, removed
 
 
-def format_comparison(comparison):
-    lines = []
-    lines.append("=== Terraform Plan Comparison ===")
-    lines.append("")
+def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2_table, plan2_cost):
+    from tabulate import tabulate
 
-    if comparison["added"]:
-        lines.append(f"Added ({len(comparison['added'])}):")
-        for res in comparison["added"]:
-            lines.append(f"  + {res}")
-
-    if comparison["removed"]:
-        lines.append("")
-        lines.append(f"Removed ({len(comparison['removed'])}):")
-        for res in comparison["removed"]:
-            lines.append(f"  - {res}")
-
-    if comparison["unchanged"]:
-        lines.append("")
-        lines.append(f"Unchanged ({len(comparison['unchanged'])}):")
-        for res in comparison["unchanged"]:
-            lines.append(f"  = {res}")
-
-    return "\n".join(lines)
-
-
-def print_cost_comparison(plan1_name, plan1_cost, plan2_name, plan2_cost):
     delta = plan2_cost - plan1_cost
     delta_str = f"+${delta:.5f}" if delta >= 0 else f"-${abs(delta):.5f}"
     delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
+    combined_table = []
+    max_rows = max(len(plan1_table), len(plan2_table))
+
+    for i in range(max_rows):
+        p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
+        p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
+        combined_table.append([p1[0], p1[1], p1[2], p1[3], p2[0], p2[1], p2[2], p2[3]])
+
     print("")
-    print(f"{'='*60}")
-    print(f"Cost Comparison")
-    print(f"{'='*60}")
+    print("=" * 70)
+    print("Cost Comparison")
+    print("=" * 70)
+    print(
+        tabulate(
+            combined_table,
+            headers=["Komponente", "Anzahl", "Typ", "Kosten", "Komponente", "Anzahl", "Typ", "Kosten"],
+            tablefmt="github",
+        )
+    )
+    print("-" * 70)
     print(f"{plan1_name:30} | ${plan1_cost:.5f}")
     print(f"{plan2_name:30} | ${plan2_cost:.5f}")
-    print(f"{'-'*60}")
-    print(f"Delta (Cost Change)           | {delta_symbol} ${abs(delta):.5f}")
-    print(f"{'='*60}")
+    print("-" * 70)
+    print(f"Delta (Cost Change)       | {delta_symbol} ${abs(delta):.5f}")
+    print("=" * 70)

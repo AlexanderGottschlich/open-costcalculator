@@ -208,10 +208,6 @@ def main():
             with open(args.compare) as f:
                 compare_plan = json.load(f)
 
-            comparison = plan_compare.compare_plans(args.compare, args.plan)
-            logger.info("")
-            logger.info(plan_compare.format_comparison(comparison))
-
             before_region = (
                 args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(compare_plan)
             )
@@ -220,9 +216,9 @@ def main():
             before_table, before_cost = analyze_plan(compare_plan, before_pricing, before_region, app_config)
             after_table, after_cost = analyze_plan(plan, pricing, region, app_config)
 
-            plan_compare.print_cost_comparison(Path(args.compare).name, before_cost, Path(args.plan).name, after_cost)
-
-            print_summary_table(after_table, after_cost)
+            plan_compare.print_cost_comparison(
+                Path(args.compare).name, before_table, before_cost, Path(args.plan).name, after_table, after_cost
+            )
             return
 
     table, total_cost = analyze_plan(plan, pricing, region, app_config)
