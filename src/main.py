@@ -8,6 +8,7 @@ from tabulate import tabulate
 
 from core import arg_utils, config, config_loader, duration_meta, logger
 from resources.alb import alb_costs
+from resources.ecs import ecs_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
 from resources.nat_gateway import nat_gateway_meta
@@ -112,6 +113,16 @@ def main():
             rows, cost = fargate_costs.process_fargate(HOURS_PER_MONTH)
             table.extend(rows)
             total_cost += cost
+
+    has_ecs_resources = any(
+        res.get("type") in ["aws_ecs_cluster", "aws_ecs_task_definition", "aws_ecs_service"]
+        for res in plan.get("resource_changes", [])
+    )
+
+    if has_ecs_resources:
+        rows, cost = ecs_costs.process_ecs(plan, pricing, region, HOURS_PER_MONTH)
+        table.extend(rows)
+        total_cost += cost
 
     rows, cost = alb_costs.calculate_alb_cost(plan, HOURS_PER_MONTH)
     table.extend(rows)
