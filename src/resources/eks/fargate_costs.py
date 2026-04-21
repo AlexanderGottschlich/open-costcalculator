@@ -21,7 +21,7 @@ def process_fargate(hours):
     cost = calculate_fargate_cost(hours)
     return [
         [
-            "Fargate",
+            "EKS Fargate",
             pricing_defaults.FARGATE_DEFAULT_PODS,
             f"{pricing_defaults.FARGATE_DEFAULT_VCPU}vCPU/{pricing_defaults.FARGATE_DEFAULT_RAM_GB}GB",
             f"${cost:.5f}",

@@ -20,4 +20,4 @@ def process_node_group(pricing_client, ec2_client, instance_type, desired_size, 
     total_cost = round(price * desired_size * HOURS_PER_MONTH, 5)
 
     logger.info(f"NodeGroup: {desired_size} x {instance_type} ({market_option}) = {total_cost} USD/Monat")
-    return [["Node Group (EC2)", desired_size, instance_type, f"${total_cost:.5f}"]], total_cost
+    return [["EKS Node Group", desired_size, instance_type, f"${total_cost:.5f}"]], total_cost

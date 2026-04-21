@@ -26,4 +26,4 @@ def process_control_plane(plan, hours):
 
     release_date = eks_pricing_meta.get_release_date(k8s_version)
     cp_cost = round(calculate_control_plane_cost(release_date, hours), 5)
-    return [["Control Plane", 1, f"v{k8s_version}", f"${cp_cost:.5f}"]], cp_cost
+    return [["EKS Control Plane", 1, f"v{k8s_version}", f"${cp_cost:.5f}"]], cp_cost
