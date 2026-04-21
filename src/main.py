@@ -8,6 +8,7 @@ from tabulate import tabulate
 
 from core import arg_utils, config, config_loader, duration_meta, logger
 from resources.alb import alb_costs
+from resources.cloudwatch_log_group import cloudwatch_log_group_costs
 from resources.ecs import ecs_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
@@ -151,6 +152,15 @@ def main():
 
     if has_route53_zone_resources:
         rows, cost = route53_zone_costs.process_route53_zone(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
+
+    has_cloudwatch_log_group_resources = any(
+        res.get("type") == "aws_cloudwatch_log_group" for res in plan.get("resource_changes", [])
+    )
+
+    if has_cloudwatch_log_group_resources:
+        rows, cost = cloudwatch_log_group_costs.process_cloudwatch_log_group(plan, pricing, region)
         table.extend(rows)
         total_cost += cost
 
