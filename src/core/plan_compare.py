@@ -31,33 +31,22 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     delta = plan2_cost - plan1_cost
     delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
-    print("")
-    print("=" * 80)
-    print("Cost Comparison")
-    print("=" * 80)
-
     rows = []
-    rows.append([plan1_name.ljust(35), plan2_name.ljust(35)])
-    rows.append(["", ""])
-    rows.append(["Komponente:", "Komponente:"])
-
     max_rows = max(len(plan1_table), len(plan2_table))
     for i in range(max_rows):
         p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
         p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
-        row1 = f"{p1[0]:<20} {p1[1]}x {p1[2]:<12} ${p1[3].replace('$', ''):>8}"
-        row2 = f"{p2[0]:<20} {p2[1]}x {p2[2]:<12} ${p2[3].replace('$', ''):>8}"
-        rows.append([row1, row2])
+        rows.append([f"{p1[0]:<18} {p1[1]}x {p1[2]:<14} ${p1[3].replace('$', ''):<10}", f"{p2[0]:<18} {p2[1]}x {p2[2]:<14} ${p2[3].replace('$', ''):<10}"])
 
-    print(tabulate(rows, tablefmt="grid"))
-
-    print("-" * 80)
-    print(
-        tabulate(
-            [["Gesamtkosten".ljust(35), f"${plan1_cost:.5f}", "Gesamtkosten".ljust(35), f"${plan2_cost:.5f}"]],
-            tablefmt="grid",
-        )
-    )
-    print("=" * 80)
-    print(f"Delta (Cost Change)       | {delta_symbol} ${abs(delta):.5f}")
-    print("=" * 80)
+    print("")
+    print("=" * 70)
+    print("Cost Comparison".center(70))
+    print("=" * 70)
+    print(f"{'Plan 1':^35}{'Plan 2':^35}")
+    print("-" * 70)
+    print(tabulate(rows, tablefmt="plain"))
+    print("-" * 70)
+    print(f"{'Gesamtkosten':<25} ${plan1_cost:<15}{'Gesamtkosten':<25} ${plan2_cost:<15}")
+    print("=" * 70)
+    print(f"Delta (Cost Change): {delta_symbol} ${abs(delta):.5f}")
+    print("=" * 70)
