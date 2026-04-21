@@ -21,35 +21,44 @@ def compare_plans(before_path, after_path):
 
     added = after_types - before_types
     removed = before_types - after_types
-    unchanged = before_types & after_types
 
-    return {
-        "added": sorted(added),
-        "removed": sorted(removed),
-        "unchanged": sorted(unchanged),
-    }
+    return added, removed
 
 
-def format_comparison(comparison):
-    lines = []
-    lines.append("=== Terraform Plan Comparison ===")
-    lines.append("")
+def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2_table, plan2_cost):
+    from tabulate import tabulate
 
-    if comparison["added"]:
-        lines.append(f"Added ({len(comparison['added'])}):")
-        for res in comparison["added"]:
-            lines.append(f"  + {res}")
+    delta = plan2_cost - plan1_cost
+    delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
-    if comparison["removed"]:
-        lines.append("")
-        lines.append(f"Removed ({len(comparison['removed'])}):")
-        for res in comparison["removed"]:
-            lines.append(f"  - {res}")
+    def format_row(row):
+        if not row or not row[0]:
+            return ""
+        name = row[0]
+        count = row[1] if len(row) > 1 and row[1] else ""
+        typ = row[2] if len(row) > 2 and row[2] else ""
+        cost = row[3].replace("$", "") if len(row) > 3 and row[3] else ""
+        return f"{name:<20} {count}x {typ:<14} ${cost:>10}"
 
-    if comparison["unchanged"]:
-        lines.append("")
-        lines.append(f"Unchanged ({len(comparison['unchanged'])}):")
-        for res in comparison["unchanged"]:
-            lines.append(f"  = {res}")
+    rows = []
+    rows.append([plan1_name, plan2_name])
+    rows.append(["", ""])
+    rows.append(["Komponente:", "Komponente:"])
 
-    return "\n".join(lines)
+    max_rows = max(len(plan1_table), len(plan2_table))
+    for i in range(max_rows):
+        p1 = plan1_table[i] if i < len(plan1_table) else None
+        p2 = plan2_table[i] if i < len(plan2_table) else None
+        rows.append([format_row(p1), format_row(p2)])
+
+    rows.append([f"Gesamtkosten ${plan1_cost:.5f}", f"Gesamtkosten ${plan2_cost:.5f}"])
+
+    print("")
+    print("=" * 92)
+    print("Cost Comparison")
+    print("=" * 92)
+    print(tabulate(rows, tablefmt="grid"))
+
+    print("=" * 92)
+    print(f"Delta (Cost Change): {delta_symbol} ${abs(delta):.5f}")
+    print("=" * 92)
