@@ -60,9 +60,9 @@ def extract_region_from_plan(plan):
 
 
 def print_summary_table(table, total_cost):
-    logger.info("📊 Cloud Ressourcen Kostenübersicht (pro Monat)")
+    logger.info("Ressourcen Kostenubersicht (pro Monat)")
     print(tabulate(table, headers=["Komponente", "Anzahl", "Typ", "Kosten"], tablefmt="github"))
-    logger.info(f"💰 Gesamtkosten/Monat: ${round(total_cost, 5)}")
+    logger.info(f"Gesamtkosten/Monat: ${round(total_cost, 5)}")
 
 
 def main():
@@ -88,7 +88,6 @@ def main():
     table = []
     total_cost = 0.0
 
-    # EKS nur verarbeiten, wenn EKS-Ressourcen enthalten sind
     has_eks_resources = any(
         res.get("type") in ["aws_eks_cluster", "aws_eks_node_group", "aws_eks_fargate_profile"]
         for res in plan.get("resource_changes", [])
@@ -100,7 +99,7 @@ def main():
 
         marketoption = "OnDemand" if not capacity_type or capacity_type.upper() == "ON_DEMAND" else "Spot"
         if not capacity_type:
-            logger.warn("Keine capacity_type gefunden – fallback zu 'OnDemand'")
+            logger.warn("Keine capacity_type gefunden - fallback zu 'OnDemand'")
 
         rows, cost = control_plane_costs.process_control_plane(plan, HOURS_PER_MONTH)
         table.extend(rows)
