@@ -8,6 +8,7 @@ from tabulate import tabulate
 
 from core import arg_utils, config, config_loader, duration_meta, logger
 from resources.alb import alb_costs
+from resources.cloudwatch_log_group import cloudwatch_log_group_costs
 from resources.ecs import ecs_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
@@ -15,6 +16,7 @@ from resources.nat_gateway import nat_gateway_meta
 from resources.rds import rds_costs
 from resources.route53_zone import route53_zone_costs
 from resources.secretsmanager_secret import secretsmanager_secret_costs
+from resources.ses_domain_identity import ses_domain_identity_costs
 
 TF_PLAN_FILE = "../plan/terraform-sf2l.plan.json"
 IGNORED_PREFIXES = [
@@ -58,9 +60,9 @@ def extract_region_from_plan(plan):
 
 
 def print_summary_table(table, total_cost):
-    logger.info("📊 Cloud Ressourcen Kostenübersicht (pro Monat)")
+    logger.info("Ressourcen Kostenubersicht (pro Monat)")
     print(tabulate(table, headers=["Komponente", "Anzahl", "Typ", "Kosten"], tablefmt="github"))
-    logger.info(f"💰 Gesamtkosten/Monat: ${round(total_cost, 5)}")
+    logger.info(f"Gesamtkosten/Monat: ${round(total_cost, 5)}")
 
 
 def main():
@@ -86,7 +88,6 @@ def main():
     table = []
     total_cost = 0.0
 
-    # EKS nur verarbeiten, wenn EKS-Ressourcen enthalten sind
     has_eks_resources = any(
         res.get("type") in ["aws_eks_cluster", "aws_eks_node_group", "aws_eks_fargate_profile"]
         for res in plan.get("resource_changes", [])
@@ -98,7 +99,7 @@ def main():
 
         marketoption = "OnDemand" if not capacity_type or capacity_type.upper() == "ON_DEMAND" else "Spot"
         if not capacity_type:
-            logger.warn("Keine capacity_type gefunden – fallback zu 'OnDemand'")
+            logger.warn("Keine capacity_type gefunden - fallback zu 'OnDemand'")
 
         rows, cost = control_plane_costs.process_control_plane(plan, HOURS_PER_MONTH)
         table.extend(rows)
@@ -151,6 +152,24 @@ def main():
 
     if has_route53_zone_resources:
         rows, cost = route53_zone_costs.process_route53_zone(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
+
+    has_cloudwatch_log_group_resources = any(
+        res.get("type") == "aws_cloudwatch_log_group" for res in plan.get("resource_changes", [])
+    )
+
+    if has_cloudwatch_log_group_resources:
+        rows, cost = cloudwatch_log_group_costs.process_cloudwatch_log_group(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
+
+    has_ses_domain_identity_resources = any(
+        res.get("type") == "aws_ses_domain_identity" for res in plan.get("resource_changes", [])
+    )
+
+    if has_ses_domain_identity_resources:
+        rows, cost = ses_domain_identity_costs.process_ses_domain_identity(plan)
         table.extend(rows)
         total_cost += cost
 
