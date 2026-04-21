@@ -31,6 +31,15 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     delta = plan2_cost - plan1_cost
     delta_symbol = "↑" if delta > 0 else "↓" if delta < 0 else "="
 
+    def format_row(row):
+        if not row or not row[0]:
+            return ""
+        name = row[0]
+        count = row[1] if len(row) > 1 and row[1] else ""
+        typ = row[2] if len(row) > 2 and row[2] else ""
+        cost = row[3].replace("$", "") if len(row) > 3 and row[3] else ""
+        return f"{name:<20} {count}x {typ:<14} ${cost:>10}"
+
     rows = []
     rows.append([plan1_name, plan2_name])
     rows.append(["", ""])
@@ -38,13 +47,11 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
 
     max_rows = max(len(plan1_table), len(plan2_table))
     for i in range(max_rows):
-        p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
-        p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
-        row1 = f"{p1[0]:<20} {p1[1]}x {p1[2]:<14} ${p1[3].replace('$', ''):<10}"
-        row2 = f"{p2[0]:<20} {p2[1]}x {p2[2]:<14} ${p2[3].replace('$', ''):<10}"
-        rows.append([row1, row2])
+        p1 = plan1_table[i] if i < len(plan1_table) else None
+        p2 = plan2_table[i] if i < len(plan2_table) else None
+        rows.append([format_row(p1), format_row(p2)])
 
-    rows.append([f"Gesamtkosten ${plan1_cost}", f"Gesamtkosten ${plan2_cost}"])
+    rows.append([f"Gesamtkosten ${plan1_cost:.5f}", f"Gesamtkosten ${plan2_cost:.5f}"])
 
     print("")
     print("=" * 92)
