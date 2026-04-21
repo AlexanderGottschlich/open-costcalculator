@@ -37,11 +37,11 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     print("=" * 80)
 
     rows = []
-    max_rows = max(len(plan1_table), len(plan2_table))
-    rows.append([plan1_name, plan2_name])
+    rows.append([plan1_name.ljust(35), plan2_name.ljust(35)])
     rows.append(["", ""])
     rows.append(["Komponente:", "Komponente:"])
 
+    max_rows = max(len(plan1_table), len(plan2_table))
     for i in range(max_rows):
         p1 = plan1_table[i] if i < len(plan1_table) else ["", "", "", ""]
         p2 = plan2_table[i] if i < len(plan2_table) else ["", "", "", ""]
@@ -54,7 +54,7 @@ def print_cost_comparison(plan1_name, plan1_table, plan1_cost, plan2_name, plan2
     print("-" * 80)
     print(
         tabulate(
-            [[plan1_name, f"${plan1_cost:.5f}", plan2_name, f"${plan2_cost:.5f}"]],
+            [["Gesamtkosten".ljust(35), f"${plan1_cost:.5f}", "Gesamtkosten".ljust(35), f"${plan2_cost:.5f}"]],
             tablefmt="grid",
         )
     )
