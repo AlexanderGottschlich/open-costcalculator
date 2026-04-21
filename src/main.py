@@ -67,6 +67,8 @@ def print_summary_table(table, total_cost):
 
 def main():
     args = parse_args()
+    logger.setup_logging(args.log_level)
+
     plan_path = Path(args.plan)
     if not plan_path.is_file():
         logger.error(f"Die angegebene Datei '{args.plan}' wurde nicht gefunden.")

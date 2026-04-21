@@ -2,6 +2,8 @@
 
 import json
 
+from core import logger
+
 
 def get_rds_storage_price(pricing_client, storage_type, region):
     """
@@ -21,5 +23,5 @@ def get_rds_storage_price(pricing_client, storage_type, region):
                 for dim in term.get("priceDimensions", {}).values():
                     return float(dim.get("pricePerUnit", {}).get("USD", 0.115))
     except Exception as e:
-        print(f"⚠️ Fehler bei RDS Storage-Preisabfrage: {e}")
+        logger.warn(f"Fehler bei RDS Storage-Preisabfrage: {e}")
     return 0.115

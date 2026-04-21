@@ -1,13 +1,19 @@
+# tests/test_logger.py
+
+import logging
+
 from core import logger
 
 
-def test_logger_methods(capsys):
+def test_logger_methods(caplog):
+    caplog.set_level(logging.DEBUG)
+
     logger.info("Test")
     logger.warn("Warnung")
     logger.error("Fehler")
     logger.success("Erfolg")
-    captured = capsys.readouterr()
-    assert "Test" in captured.out
-    assert "Warnung" in captured.out
-    assert "Fehler" in captured.out
-    assert "Erfolg" in captured.out
+
+    assert "INFO: Test" in caplog.text
+    assert "WARNING: Warnung" in caplog.text
+    assert "ERROR: Fehler" in caplog.text
+    assert "SUCCESS: Erfolg" in caplog.text
