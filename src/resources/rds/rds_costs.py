@@ -7,30 +7,31 @@ HOURS_PER_MONTH = duration_meta.HOURS_PER_MONTH
 
 
 def process_rds(plan: dict, pricing_client, region: str) -> tuple:
-    rds_info = rds_meta.extract(plan)
-    if not rds_info:
+    instances = rds_meta.extract_all(plan)
+    if not instances:
         return [], 0.0
 
-    # Instanzpreis dynamisch abfragen
-    instance_filters = rds_filters.build(
-        instance_class=rds_info["instance_class"],
-        engine=rds_info["engine"],
-        location=region,  # "region" wird als "location" an AWS Pricing API übergeben
-        multi_az=rds_info["multi_az"],
-    )
-    instance_price = pricing_utils.get_price_for_service(pricing_client, "AmazonRDS", instance_filters)
+    rows = []
+    total_cost = 0.0
 
-    # Storagepreis dynamisch bestimmen
-    storage_price = rds_utils.get_rds_storage_price(pricing_client, rds_info["storage_type"], region)
-    storage_cost = storage_price * rds_info["storage_gb"]
+    for rds_info in instances:
+        instance_filters = rds_filters.build(
+            instance_class=rds_info["instance_class"],
+            engine=rds_info["engine"],
+            location=region,
+            multi_az=rds_info["multi_az"],
+        )
+        instance_price = pricing_utils.get_price_for_service(pricing_client, "AmazonRDS", instance_filters)
 
-    # Monatliche Gesamtkosten berechnen
-    total_instance_cost = round(instance_price * HOURS_PER_MONTH, 5)
-    total_storage_cost = round(storage_cost, 5)
-    total_cost = round(total_instance_cost + total_storage_cost, 5)
+        storage_price = rds_utils.get_rds_storage_price(pricing_client, rds_info["storage_type"], region)
+        storage_cost = storage_price * rds_info["storage_gb"]
 
-    rows = [
-        ["RDS Instance", 1, rds_info["instance_class"], f"${total_instance_cost:.5f}"],
-        ["RDS Storage", rds_info["storage_gb"], rds_info["storage_type"], f"${total_storage_cost:.5f}"],
-    ]
-    return rows, total_cost
+        total_instance_cost = round(instance_price * HOURS_PER_MONTH, 5)
+        total_storage_cost = round(storage_cost, 5)
+        instance_total = round(total_instance_cost + total_storage_cost, 5)
+
+        rows.append(["RDS Instance", 1, rds_info["instance_class"], f"${total_instance_cost:.5f}"])
+        rows.append(["RDS Storage", rds_info["storage_gb"], rds_info["storage_type"], f"${total_storage_cost:.5f}"])
+        total_cost += instance_total
+
+    return rows, round(total_cost, 5)
