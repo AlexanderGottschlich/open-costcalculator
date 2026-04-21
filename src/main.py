@@ -9,6 +9,7 @@ from tabulate import tabulate
 from core import arg_utils, config, config_loader, duration_meta, logger
 from resources.alb import alb_costs
 from resources.cloudwatch_log_group import cloudwatch_log_group_costs
+from resources.cognito_user_pool import cognito_user_pool_costs
 from resources.ecs import ecs_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
@@ -172,6 +173,15 @@ def main():
 
     if has_ses_domain_identity_resources:
         rows, cost = ses_domain_identity_costs.process_ses_domain_identity(plan)
+        table.extend(rows)
+        total_cost += cost
+
+    has_cognito_user_pool_resources = any(
+        res.get("type") == "aws_cognito_user_pool" for res in plan.get("resource_changes", [])
+    )
+
+    if has_cognito_user_pool_resources:
+        rows, cost = cognito_user_pool_costs.process_cognito_user_pool(plan)
         table.extend(rows)
         total_cost += cost
 
