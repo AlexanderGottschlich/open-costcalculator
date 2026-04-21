@@ -233,6 +233,15 @@ def main():
         else:
             logger.info(f"No resources found with tag '{args.group_by}'")
 
+    if args.compare:
+        compare_path = Path(args.compare)
+        if not compare_path.is_file():
+            logger.error(f"Die Vergleichsdatei '{args.compare}' wurde nicht gefunden.")
+        else:
+            comparison = plan_compare.compare_plans(args.compare, args.plan)
+            logger.info("")
+            logger.info(plan_compare.format_comparison(comparison))
+
     print_summary_table(table, total_cost)
 
 
