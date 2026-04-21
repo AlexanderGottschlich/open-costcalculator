@@ -13,6 +13,7 @@ LOG_LEVEL = "INFO"
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--plan", default=DEFAULT_PLAN_PATH, help="Pfad zur terraform-eks.plan.json Datei")
+    parser.add_argument("--compare", default=None, help="Pfad zum zweiten Plan für Vergleich (before)")
     parser.add_argument("--config", default=DEFAULT_CONFIG_PATH, help="Pfad zur config.yaml Datei")
     parser.add_argument("--debug", action="store_true", help="Aktiviere detaillierte Debug-Ausgaben für Preisabfragen")
     parser.add_argument("--region", default=DEFAULT_REGION, help="AWS Region (default: eu-central-1)")
