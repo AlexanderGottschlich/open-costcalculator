@@ -1,17 +1,33 @@
 # filter/logger.py
 
+import logging
+import sys
+
+
+def setup_logging(level="INFO"):
+    log_level = getattr(logging, level.upper(), logging.INFO)
+    logging.basicConfig(
+        level=log_level,
+        format="%(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+
 
 def warn(message):
-    print(f"⚠️  {message}")
+    logging.warning(f"WARNING: {message}")
 
 
 def info(message):
-    print(f"ℹ️  {message}")
+    logging.info(f"INFO: {message}")
 
 
 def error(message):
-    print(f"❌  {message}")
+    logging.error(f"ERROR: {message}")
 
 
 def success(message):
-    print(f"✅  {message}")
+    logging.info(f"SUCCESS: {message}")
+
+
+def debug(message):
+    logging.debug(f"DEBUG: {message}")
