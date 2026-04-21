@@ -16,6 +16,7 @@ from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
 from resources.nat_gateway import nat_gateway_meta
 from resources.rds import rds_costs
 from resources.route53_zone import route53_zone_costs
+from resources.s3 import s3_costs
 from resources.secretsmanager_secret import secretsmanager_secret_costs
 from resources.ses_domain_identity import ses_domain_identity_costs
 
@@ -182,6 +183,13 @@ def main():
 
     if has_cognito_user_pool_resources:
         rows, cost = cognito_user_pool_costs.process_cognito_user_pool(plan)
+        table.extend(rows)
+        total_cost += cost
+
+    has_s3_resources = any(res.get("type") == "aws_s3_bucket" for res in plan.get("resource_changes", []))
+
+    if has_s3_resources:
+        rows, cost = s3_costs.process_s3(plan, pricing, region, app_config)
         table.extend(rows)
         total_cost += cost
 
