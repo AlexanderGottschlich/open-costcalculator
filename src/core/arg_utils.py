@@ -22,6 +22,12 @@ def parse_args():
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Log level (default: INFO)",
     )
+    parser.add_argument(
+        "--group-by",
+        default=None,
+        choices=["project", "team", "environment", "cost_center"],
+        help="Group costs by tag (default: None)",
+    )
     args = parser.parse_args()
 
     global LOG_DEBUG, LOG_LEVEL
