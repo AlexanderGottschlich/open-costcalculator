@@ -49,7 +49,9 @@ def calculate_fargate_cost(cpu, memory, cpu_price, memory_price, desired_count, 
     except (ValueError, TypeError):
         memory_value = pricing_defaults.FARGATE_DEFAULT_RAM_GB
 
-    cpu_cost = cpu_price * cpu_value * hours * desired_count
+    cpu_units_to_vcpu = cpu_value / 1024.0
+
+    cpu_cost = cpu_price * cpu_units_to_vcpu * hours * desired_count
     memory_cost = memory_price * memory_value * hours * desired_count
 
     return round(cpu_cost + memory_cost, 5)

@@ -8,7 +8,7 @@ def extract_ecs_task_definition(plan):
         if res.get("type") == "aws_ecs_task_definition":
             change = res.get("change", {})
             actions = change.get("actions", [])
-            if "create" in actions or "update" in actions:
+            if not actions or "create" in actions or "update" in actions:
                 after = change.get("after", {})
                 if after:
                     cpu = after.get("cpu")
@@ -22,7 +22,7 @@ def extract_ecs_service(plan):
         if res.get("type") == "aws_ecs_service":
             change = res.get("change", {})
             actions = change.get("actions", [])
-            if "create" in actions or "update" in actions:
+            if not actions or "create" in actions or "update" in actions:
                 after = change.get("after", {})
                 if after:
                     launch_type = after.get("launch_type", "FARGATE")
