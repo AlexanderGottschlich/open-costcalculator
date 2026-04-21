@@ -6,7 +6,7 @@ from pathlib import Path
 import boto3
 from tabulate import tabulate
 
-from core import arg_utils, config, duration_meta, logger
+from core import arg_utils, config, config_loader, duration_meta, logger
 from resources.alb import alb_costs
 from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
@@ -69,6 +69,10 @@ def main():
 
     with open(args.plan) as f:
         plan = json.load(f)
+
+    app_config = config_loader.load_config(args.config)
+    if app_config:
+        logger.info(f"Konfiguration geladen aus: {args.config}")
 
     region = args.region if args.region != config.DEFAULT_REGION else extract_region_from_plan(plan)
     logger.info(f"Verwende Region: {region}")
