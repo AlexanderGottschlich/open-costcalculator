@@ -1,4 +1,5 @@
 # main.py
+
 import json
 import sys
 from pathlib import Path
@@ -6,7 +7,8 @@ from pathlib import Path
 import boto3
 from tabulate import tabulate
 
-from core import arg_utils, config, config_loader, duration_meta, logger
+from core import (arg_utils, config, config_loader, duration_meta, logger,
+                  plan_compare)
 from core.group_by import tags as group_tags
 from resources.alb import alb_costs
 from resources.cloudwatch_log_group import cloudwatch_log_group_costs
@@ -203,6 +205,15 @@ def main():
                 logger.info(f"  {args.group_by}={group_name}: {len(resources)} resources")
         else:
             logger.info(f"No resources found with tag '{args.group_by}'")
+
+    if args.compare:
+        compare_path = Path(args.compare)
+        if not compare_path.is_file():
+            logger.error(f"Die Vergleichsdatei '{args.compare}' wurde nicht gefunden.")
+        else:
+            comparison = plan_compare.compare_plans(args.compare, args.plan)
+            logger.info("")
+            logger.info(plan_compare.format_comparison(comparison))
 
     print_summary_table(table, total_cost)
 
