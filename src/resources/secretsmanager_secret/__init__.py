@@ -1,0 +1,1 @@
+# resources/secretsmanager_secret

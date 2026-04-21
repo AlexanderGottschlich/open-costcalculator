@@ -13,6 +13,7 @@ from resources.eks import (control_plane_costs, fargate_costs, nodegroup_costs,
                            nodegroup_meta)
 from resources.nat_gateway import nat_gateway_meta
 from resources.rds import rds_costs
+from resources.secretsmanager_secret import secretsmanager_secret_costs
 
 TF_PLAN_FILE = "../plan/terraform-sf2l.plan.json"
 IGNORED_PREFIXES = [
@@ -135,6 +136,15 @@ def main():
     rds_rows, rds_total = rds_costs.process_rds(plan, pricing, region)
     table.extend(rds_rows)
     total_cost += rds_total
+
+    has_secretsmanager_resources = any(
+        res.get("type") == "aws_secretsmanager_secret" for res in plan.get("resource_changes", [])
+    )
+
+    if has_secretsmanager_resources:
+        rows, cost = secretsmanager_secret_costs.process_secretsmanager_secret(plan, pricing, region)
+        table.extend(rows)
+        total_cost += cost
 
     print_summary_table(table, total_cost)
 
